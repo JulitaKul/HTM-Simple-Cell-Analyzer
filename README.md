@@ -37,7 +37,7 @@ Given a grayscale PNG or JPG image, the tool segments the main cell body, outlin
 
 Open the application directly in your browser:
 
-**→ [Launch HTM SCA](https://claude.ai/public/artifacts/5d335adc-de9b-46b9-a4b4-45afdcf48168)**
+**→ [Launch HTM SCA](https://julitakul.github.io/HTM-Simple-Cell-Analyzer/)**
 
 
 
