@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTM Simple Cell Analyzer</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    color: #222;
+    background: #f5f5f5;
+    padding: 14px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 14px;
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+  }
+  .control {
+    margin-bottom: 12px;
+  }
+  .control label {
+    display: block;
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 4px;
+  }
+  .control .val {
+    float: right;
+    font-family: monospace;
+    color: #2c7;
+  }
+  input[type=range] {
+    width: 100%;
+  }
+  .checks label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 4px;
+    cursor: pointer;
+  }
+  button {
+    display: block;
+    width: 100%;
+    padding: 7px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  button.primary {
+    background: #2c7;
+    color: #fff;
+    border-color: #2c7;
+    font-weight: 500;
+  }
+  button:hover:not(:disabled) { filter: brightness(0.95); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .canvas-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .canvas-box {
+    background: #222;
+    border-radius: 4px;
+    padding: 6px;
+    text-align: center;
+  }
+  .canvas-box h3 {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 4px;
+    font-weight: 400;
+  }
+  canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    background: #000;
+  }
+  .results {
+    margin-top: 10px;
+  }
+  .results table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+  .results td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #eee;
+  }
+  .results td:first-child {
+    color: #666;
+    width: 50%;
+  }
+  .results td:last-child {
+    font-family: monospace;
+    text-align: right;
+  }
+  .verdict {
+    padding: 6px 10px;
+    border-radius: 4px;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+  }
+  .v-ok { background: #e1f5ec; color: #175; }
+  .v-mid { background: #fdf0d5; color: #854; }
+  .v-bad { background: #fce4e4; color: #833; }
+  .status {
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+    min-height: 14px;
+  }
+  .section-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  input[type=file] {
+    font-size: 11px;
+  }
+  .logo-bar {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-bar img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  .funding-note {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #f5f5f5;
+    border-left: 3px solid #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo-bar">
+  <img src="data:image/jpeg;base64,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" alt="Funding partners: Krajowy Plan Odbudowy, Rzeczpospolita Polska, Unia Europejska NextGenerationEU, Agencja Badań Medycznych">
+</div>
+
+<h1>HTM Simple Cell Analyzer <span style="font-size:11px;color:#888;font-weight:400">— minimal browser tool</span></h1>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="panel">
+    <div class="control">
+      <div class="section-title">Image</div>
+      <input type="file" id="file" accept=".png,.jpg,.jpeg">
+      <div class="status" id="fstat"></div>
+    </div>
+
+    <div class="section-title">Parameters</div>
+
+    <!-- TUNABLE: threshold multiplier for cell mask (0 = mean only) -->
+    <div class="control">
+      <label>Threshold <span class="val" id="thrV">0.80</span></label>
+      <input type="range" id="thr" min="0.30" max="0.98" step="0.01" value="0.80">
+      <div style="font-size:10px;color:#888;margin-top:2px">Higher = only brightest pixels kept as cell</div>
+    </div>
+
+    <!-- TUNABLE: blur radius for background subtraction (higher = stronger BG removal) -->
+    <div class="control">
+      <label>Background blur <span class="val" id="blurV">8</span></label>
+      <input type="range" id="blur" min="0" max="30" step="1" value="8">
+    </div>
+
+    <!-- TUNABLE: granule sensitivity — offset above masked mean -->
+    <div class="control">
+      <label>Granule sensitivity <span class="val" id="granV">0.25</span></label>
+      <input type="range" id="gran" min="0.05" max="0.80" step="0.01" value="0.25">
+    </div>
+
+    <div class="section-title">Display</div>
+    <div class="checks">
+      <label><input type="checkbox" id="showMask" checked> Show binary mask</label>
+      <label><input type="checkbox" id="showContour" checked> Show contour</label>
+      <label><input type="checkbox" id="showGranules" checked> Show granules</label>
+    </div>
+
+    <button class="primary" id="runBtn" disabled>Run Analysis</button>
+    <button id="expCsv" disabled>Export Results CSV</button>
+
+    <div class="status" id="pstat"></div>
+
+    <div class="funding-note">
+      This research was funded by the Medical Research Agency, grant no.
+      2024/ABM/03/KPO/KPOD.07.07-IW.07-0072/24-00.
+    </div>
+  </div>
+
+  <!-- Main display -->
+  <div>
+    <div class="canvas-row">
+      <div class="canvas-box">
+        <h3>ORIGINAL</h3>
+        <canvas id="cvOrig" width="400" height="300"></canvas>
+      </div>
+      <div class="canvas-box">
+        <h3>OVERLAY</h3>
+        <canvas id="cvOver" width="400" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="panel results" id="resPanel" style="display:none;margin-top:14px">
+      <div class="section-title">Results</div>
+      <table>
+        <tbody id="resBody"></tbody>
+      </table>
+      <div id="verdict" class="verdict"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ──────────────────────────────────────────────────────────────────
+const S = { imgData: null, w: 0, h: 0, fileName: '', results: null };
+
+// ─── UI wiring ──────────────────────────────────────────────────────────────
+function bindSlider(id, disp, fmt) {
+  const el = document.getElementById(id);
+  const d = document.getElementById(disp);
+  el.addEventListener('input', () => d.textContent = fmt(+el.value));
+}
+bindSlider('thr', 'thrV', v => v.toFixed(2));
+// Default percentile cutoff for dim holotomographic cells
+
+// Live preview: re-run when threshold slider settles (200ms debounce)
+let thrTimer = null;
+document.getElementById('thr').addEventListener('input', () => {
+  if (!S.imgData) return;
+  if (thrTimer) clearTimeout(thrTimer);
+  thrTimer = setTimeout(() => runAnalysis(), 250);
+});
+bindSlider('blur', 'blurV', v => v | 0);
+bindSlider('gran', 'granV', v => v.toFixed(2));
+
+document.getElementById('file').addEventListener('change', onFile);
+document.getElementById('runBtn').addEventListener('click', runAnalysis);
+document.getElementById('expCsv').addEventListener('click', exportCsv);
+
+// Draw placeholder text so canvases are not blank
+function drawPlaceholder() {
+  ['cvOrig', 'cvOver'].forEach(id => {
+    const c = document.getElementById(id);
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = '#666';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Upload an image to begin', c.width / 2, c.height / 2);
+  });
+}
+drawPlaceholder();
+
+// Re-render when display checkboxes toggle (cheap: only redraws overlay)
+['showMask', 'showContour', 'showGranules'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    if (S.results) drawOverlay();
+  });
+});
+
+// ─── Load image ─────────────────────────────────────────────────────────────
+function onFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  S.fileName = f.name;
+  document.getElementById('fstat').textContent = 'Loading ' + f.name + '...';
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      // Downscale for speed. TUNABLE: MAX_DIM.
+      const MAX_DIM = 500;
+      let w = img.width, h = img.height;
+      if (w > MAX_DIM || h > MAX_DIM) {
+        const s = MAX_DIM / Math.max(w, h);
+        w = Math.round(w * s);
+        h = Math.round(h * s);
+      }
+      const oc = document.createElement('canvas');
+      oc.width = w; oc.height = h;
+      const octx = oc.getContext('2d');
+      octx.drawImage(img, 0, 0, w, h);
+      S.imgData = octx.getImageData(0, 0, w, h);
+      S.w = w; S.h = h;
+
+      // Display original
+      const cv = document.getElementById('cvOrig');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').putImageData(S.imgData, 0, 0);
+
+      // Mirror on overlay canvas
+      const cv2 = document.getElementById('cvOver');
+      cv2.width = w; cv2.height = h;
+      cv2.getContext('2d').putImageData(S.imgData, 0, 0);
+
+      document.getElementById('fstat').textContent = f.name + ' — ' + w + '×' + h;
+      document.getElementById('runBtn').disabled = false;
+      document.getElementById('pstat').textContent = 'Ready. Click Run Analysis.';
+      S.results = null;
+      document.getElementById('resPanel').style.display = 'none';
+    };
+    img.onerror = () => {
+      document.getElementById('fstat').textContent = 'Error: could not decode image. Try PNG or JPG.';
+    };
+    img.src = ev.target.result;
+  };
+  reader.onerror = () => {
+    document.getElementById('fstat').textContent = 'Error: could not read file.';
+  };
+  reader.readAsDataURL(f);
+}
+
+// ─── Core image operations ──────────────────────────────────────────────────
+// Grayscale: returns Float32Array in [0,1]
+function toGray(imgData) {
+  const d = imgData.data;
+  const n = imgData.width * imgData.height;
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    out[i] = (0.299 * d[i*4] + 0.587 * d[i*4+1] + 0.114 * d[i*4+2]) / 255;
+  }
+  return out;
+}
+
+// Simple box blur via separable horizontal+vertical integral-style pass.
+// r = half-window radius in pixels. For r=0, returns a copy.
+function boxBlur(src, w, h, r) {
+  if (r < 1) return src.slice();
+  const tmp = new Float32Array(w * h);
+  const out = new Float32Array(w * h);
+  // Horizontal
+  for (let y = 0; y < h; y++) {
+    let sum = 0, count = 0;
+    for (let x = -r; x <= r; x++) {
+      const xi = Math.max(0, Math.min(w - 1, x));
+      sum += src[y * w + xi]; count++;
+    }
+    tmp[y * w + 0] = sum / count;
+    for (let x = 1; x < w; x++) {
+      const addX = Math.min(w - 1, x + r);
+      const remX = Math.max(0, x - r - 1);
+      sum += src[y * w + addX] - src[y * w + remX];
+      tmp[y * w + x] = sum / count;
+    }
+  }
+  // Vertical
+  for (let x = 0; x < w; x++) {
+    let sum = 0, count = 0;
+    for (let y = -r; y <= r; y++) {
+      const yi = Math.max(0, Math.min(h - 1, y));
+      sum += tmp[yi * w + x]; count++;
+    }
+    out[0 * w + x] = sum / count;
+    for (let y = 1; y < h; y++) {
+      const addY = Math.min(h - 1, y + r);
+      const remY = Math.max(0, y - r - 1);
+      sum += tmp[addY * w + x] - tmp[remY * w + x];
+      out[y * w + x] = sum / count;
+    }
+  }
+  return out;
+}
+
+// Background subtraction: gray - blur(gray), then clip to [0,1]
+function subtractBG(gray, w, h, blurR) {
+  if (blurR < 1) return gray.slice();
+  const bg = boxBlur(gray, w, h, blurR);
+  const out = new Float32Array(w * h);
+  // Normalize to [0, 1] based on max of (gray - bg)
+  let mx = 0;
+  for (let i = 0; i < gray.length; i++) {
+    const v = gray[i] - bg[i];
+    out[i] = v;
+    if (v > mx) mx = v;
+  }
+  if (mx > 0) {
+    for (let i = 0; i < out.length; i++) {
+      out[i] = Math.max(0, out[i] / mx);
+    }
+  }
+  return out;
+}
+
+// Binary threshold using PERCENTILE cutoff (robust to bright outliers).
+// `thr` = fraction of pixels kept as foreground (0.1 = brightest 10%, 0.5 = top half).
+// Slider maps inversely: high slider value → keep only brightest pixels.
+function threshold(arr, thr) {
+  // Sample-sort approach: sample every 3rd pixel for speed, find percentile
+  const sample = [];
+  for (let i = 0; i < arr.length; i += 3) sample.push(arr[i]);
+  sample.sort((a, b) => a - b);
+  // thr=0.5 → keep top 50%, thr=0.9 → keep top 10%
+  const cutoffIdx = Math.floor(sample.length * (1 - (1 - thr)));
+  // Simpler: just use percentile position directly
+  // Slider value = fraction considered "background" below that rank
+  const bgFrac = thr; // pixels below this percentile → background
+  const cutoff = sample[Math.floor(sample.length * bgFrac)] || 0;
+  const out = new Uint8Array(arr.length);
+  for (let i = 0; i < arr.length; i++) out[i] = arr[i] > cutoff ? 1 : 0;
+  return out;
+}
+
+// Connected components (4-connectivity). Returns {labels, sizes, count}
+function connectedComponents(bin, w, h) {
+  const labels = new Int32Array(w * h);
+  const sizes = [0]; // index 0 unused
+  let next = 1;
+  const stack = [];
+  for (let i = 0; i < bin.length; i++) {
+    if (!bin[i] || labels[i]) continue;
+    const label = next++;
+    let count = 0;
+    stack.push(i);
+    labels[i] = label;
+    while (stack.length) {
+      const p = stack.pop();
+      count++;
+      const x = p % w, y = (p / w) | 0;
+      // 4-neighbors
+      if (x > 0     && bin[p - 1] && !labels[p - 1]) { labels[p - 1] = label; stack.push(p - 1); }
+      if (x < w - 1 && bin[p + 1] && !labels[p + 1]) { labels[p + 1] = label; stack.push(p + 1); }
+      if (y > 0     && bin[p - w] && !labels[p - w]) { labels[p - w] = label; stack.push(p - w); }
+      if (y < h - 1 && bin[p + w] && !labels[p + w]) { labels[p + w] = label; stack.push(p + w); }
+    }
+    sizes.push(count);
+  }
+  return { labels, sizes, count: next - 1 };
+}
+
+// Simple hole fill: fill components of background (0) that don't touch the image border.
+function fillHoles(bin, w, h) {
+  // Find background components touching border using BFS on inverted mask.
+  const visited = new Uint8Array(w * h);
+  const queue = [];
+  for (let x = 0; x < w; x++) {
+    if (!bin[x])            { queue.push(x);           visited[x] = 1; }
+    if (!bin[(h-1)*w + x])  { const p=(h-1)*w+x; queue.push(p); visited[p] = 1; }
+  }
+  for (let y = 0; y < h; y++) {
+    if (!bin[y*w])          { queue.push(y*w);         visited[y*w] = 1; }
+    if (!bin[y*w + w - 1])  { const p=y*w+w-1; queue.push(p); visited[p] = 1; }
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const p = queue[head++];
+    const x = p % w, y = (p / w) | 0;
+    if (x > 0     && !bin[p - 1] && !visited[p - 1]) { visited[p - 1] = 1; queue.push(p - 1); }
+    if (x < w - 1 && !bin[p + 1] && !visited[p + 1]) { visited[p + 1] = 1; queue.push(p + 1); }
+    if (y > 0     && !bin[p - w] && !visited[p - w]) { visited[p - w] = 1; queue.push(p - w); }
+    if (y < h - 1 && !bin[p + w] && !visited[p + w]) { visited[p + w] = 1; queue.push(p + w); }
+  }
+  // Any 0-pixel not visited is an interior hole → fill.
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    out[i] = bin[i] || !visited[i] ? 1 : 0;
+  }
+  return out;
+}
+
+// Extract boundary pixels of a binary mask (pixels with at least one background neighbor).
+function boundary(mask, w, h) {
+  const out = [];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      if (!mask[i]) continue;
+      // 4-neighbor check; image-edge pixels are also boundary.
+      if (x === 0 || x === w - 1 || y === 0 || y === h - 1
+          || !mask[i - 1] || !mask[i + 1] || !mask[i - w] || !mask[i + w]) {
+        out.push([x, y]);
+      }
+    }
+  }
+  return out;
+}
+
+// ─── Analysis pipeline ──────────────────────────────────────────────────────
+function runAnalysis() {
+  if (!S.imgData) return;
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  document.getElementById('pstat').textContent = 'Processing...';
+
+  // Yield once so UI updates before heavy work.
+  setTimeout(() => {
+    const w = S.w, h = S.h;
+    const thrVal = +document.getElementById('thr').value;
+    const blurR  = +document.getElementById('blur').value | 0;
+    const granK  = +document.getElementById('gran').value;
+
+    // 1. Grayscale
+    const gray = toGray(S.imgData);
+
+    // 2. Background subtraction + light smoothing
+    const bgSub = subtractBG(gray, w, h, blurR);
+    const smooth = boxBlur(bgSub, w, h, 1); // very light smooth for stability
+
+    // 3. Threshold
+    const binary = threshold(smooth, thrVal);
+
+    // 4. Connected components → pick largest
+    const cc = connectedComponents(binary, w, h);
+    if (cc.count === 0) {
+      document.getElementById('pstat').textContent = 'No cell detected. Adjust threshold.';
+      btn.disabled = false;
+      return;
+    }
+    // Identify which components touch the image border — these are likely
+    // background/frame and should be deprioritized when picking the cell.
+    const touchesBorder = new Uint8Array(cc.sizes.length);
+    for (let x = 0; x < w; x++) {
+      if (cc.labels[x])           touchesBorder[cc.labels[x]] = 1;
+      const bot = (h-1)*w + x;
+      if (cc.labels[bot])         touchesBorder[cc.labels[bot]] = 1;
+    }
+    for (let y = 0; y < h; y++) {
+      if (cc.labels[y*w])         touchesBorder[cc.labels[y*w]] = 1;
+      const rt = y*w + w - 1;
+      if (cc.labels[rt])          touchesBorder[cc.labels[rt]] = 1;
+    }
+    // Pick: largest NON-border-touching component. If none, fall back.
+    let best = 0, bestSize = 0;
+    for (let i = 1; i < cc.sizes.length; i++) {
+      if (touchesBorder[i]) continue;
+      if (cc.sizes[i] > bestSize) { best = i; bestSize = cc.sizes[i]; }
+    }
+    // Fallback — if no interior component found, use largest overall
+    if (!best) {
+      for (let i = 1; i < cc.sizes.length; i++) {
+        if (cc.sizes[i] > bestSize) { best = i; bestSize = cc.sizes[i]; }
+      }
+    }
+    if (!best) {
+      document.getElementById('pstat').textContent = 'No cell detected. Adjust threshold.';
+      btn.disabled = false;
+      return;
+    }
+    // Build mask for the selected component only.
+    const cellMask = new Uint8Array(w * h);
+    for (let i = 0; i < cc.labels.length; i++) {
+      if (cc.labels[i] === best) cellMask[i] = 1;
+    }
+    // Fill interior holes (simple)
+    const filled = fillHoles(cellMask, w, h);
+
+    // 5. Measurements
+    const edges = boundary(filled, w, h);
+    const perimeter = edges.length;
+    let area = 0;
+    let minX = w, maxX = -1, minY = h, maxY = -1;
+    let sumIntensity = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (!filled[i]) continue;
+        area++;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+        sumIntensity += gray[i];
+      }
+    }
+    const bbW = maxX - minX + 1;
+    const bbH = maxY - minY + 1;
+    const aspect = Math.max(bbW, bbH) / Math.max(1, Math.min(bbW, bbH));
+    const circularity = perimeter > 0
+      ? Math.min(1, (4 * Math.PI * area) / (perimeter * perimeter))
+      : 0;
+    const solidity = (bbW * bbH) > 0 ? area / (bbW * bbH) : 0;
+    const meanIntensity = area > 0 ? sumIntensity / area : 0;
+
+    // 6. Verdict
+    // TUNABLE: circularity thresholds for interpretation
+    let verdict, vClass;
+    if (circularity > 0.78)      { verdict = 'Near circular';       vClass = 'v-ok'; }
+    else if (circularity > 0.55) { verdict = 'Moderately irregular'; vClass = 'v-mid'; }
+    else                         { verdict = 'Clearly irregular';   vClass = 'v-bad'; }
+
+    // 7. Granule detection (optional, simple)
+    //    Use gray - heavily-blurred(gray) to isolate bright spots, mask to cell interior.
+    const granBG = boxBlur(gray, w, h, 5); // local mean radius for spot relief
+    const granules = [];
+    // Visited array avoids double-counting
+    const visited = new Uint8Array(w * h);
+    // Threshold: mean-masked signal + granK * (max - mean)
+    let masked_mean = 0, masked_max = 0, masked_n = 0;
+    for (let i = 0; i < filled.length; i++) {
+      if (!filled[i]) continue;
+      const v = gray[i] - granBG[i];
+      masked_mean += v; masked_n++;
+      if (v > masked_max) masked_max = v;
+    }
+    masked_mean = masked_n > 0 ? masked_mean / masked_n : 0;
+    const granCut = masked_mean + granK * Math.max(0, masked_max - masked_mean);
+
+    // Collect bright spots as small connected components (size-capped)
+    // TUNABLE: MAX_GRANULE_PIXELS, MIN_GRANULE_PIXELS
+    const MIN_G = 2, MAX_G = 60;
+    let totalIntensity = 0;
+    let totalArea = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (!filled[i] || visited[i]) continue;
+        const v = gray[i] - granBG[i];
+        if (v < granCut) continue;
+        // BFS flood, capped
+        const stack = [i];
+        visited[i] = 1;
+        let cnt = 0, sx = 0, sy = 0, sI = 0;
+        let abort = false;
+        while (stack.length && !abort) {
+          const p = stack.pop();
+          cnt++;
+          const px = p % w, py = (p / w) | 0;
+          sx += px; sy += py;
+          sI += gray[p];
+          if (cnt > MAX_G) { abort = true; break; }
+          // 4-neighbors, inside filled mask, above cutoff
+          const ns = [p - 1, p + 1, p - w, p + w];
+          const valid = [px > 0, px < w - 1, py > 0, py < h - 1];
+          for (let k = 0; k < 4; k++) {
+            if (!valid[k]) continue;
+            const q = ns[k];
+            if (visited[q] || !filled[q]) continue;
+            if ((gray[q] - granBG[q]) < granCut) continue;
+            visited[q] = 1;
+            stack.push(q);
+          }
+        }
+        if (!abort && cnt >= MIN_G) {
+          granules.push({
+            cx: sx / cnt, cy: sy / cnt, area: cnt,
+            intensity: sI / cnt
+          });
+          totalIntensity += sI / cnt;
+          totalArea += cnt;
+        }
+      }
+    }
+
+    // 8. Store results
+    S.results = {
+      width: w, height: h,
+      area, perimeter,
+      bbox_width: bbW, bbox_height: bbH,
+      aspect_ratio: +aspect.toFixed(3),
+      circularity: +circularity.toFixed(3),
+      solidity: +solidity.toFixed(3),
+      mean_intensity: +meanIntensity.toFixed(3),
+      verdict,
+      granule_count: granules.length,
+      granule_mean_area: granules.length > 0 ? +(totalArea / granules.length).toFixed(2) : 0,
+      granule_mean_intensity: granules.length > 0 ? +(totalIntensity / granules.length).toFixed(3) : 0,
+      _internal: { filled, edges, granules, vClass }
+    };
+
+    // 9. Render
+    drawOverlay();
+    renderResults();
+    document.getElementById('expCsv').disabled = false;
+    document.getElementById('pstat').textContent = `Done — ${granules.length} granules, ${area}px area`;
+    btn.disabled = false;
+  }, 20);
+}
+
+// ─── Drawing ────────────────────────────────────────────────────────────────
+function drawOverlay() {
+  if (!S.results) return;
+  const cv = document.getElementById('cvOver');
+  const ctx = cv.getContext('2d');
+  const { filled, edges, granules } = S.results._internal;
+  const w = S.w, h = S.h;
+
+  // Base: original image
+  ctx.putImageData(S.imgData, 0, 0);
+
+  // Optional: binary mask overlay (semi-transparent)
+  if (document.getElementById('showMask').checked) {
+    const ov = ctx.createImageData(w, h);
+    for (let i = 0; i < filled.length; i++) {
+      if (filled[i]) {
+        ov.data[i*4]   = 50;
+        ov.data[i*4+1] = 255;
+        ov.data[i*4+2] = 150;
+        ov.data[i*4+3] = 90;
+      }
+    }
+    // Put the mask overlay on top
+    const tmp = document.createElement('canvas');
+    tmp.width = w; tmp.height = h;
+    tmp.getContext('2d').putImageData(ov, 0, 0);
+    ctx.drawImage(tmp, 0, 0);
+  }
+
+  // Contour
+  if (document.getElementById('showContour').checked) {
+    ctx.fillStyle = '#00ff99';
+    for (const [x, y] of edges) {
+      ctx.fillRect(x, y, 1.5, 1.5);
+    }
+  }
+
+  // Granules
+  if (document.getElementById('showGranules').checked) {
+    ctx.strokeStyle = '#ffdd33';
+    ctx.lineWidth = 1.5;
+    for (const g of granules) {
+      const r = Math.max(2, Math.sqrt(g.area / Math.PI) + 1);
+      ctx.beginPath();
+      ctx.arc(g.cx, g.cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+}
+
+function renderResults() {
+  const r = S.results;
+  if (!r) return;
+  const rows = [
+    ['Area (px)', r.area],
+    ['Perimeter (px)', r.perimeter],
+    ['Bounding box', `${r.bbox_width} × ${r.bbox_height}`],
+    ['Aspect ratio', r.aspect_ratio],
+    ['Circularity', r.circularity],
+    ['Solidity', r.solidity],
+    ['Mean intensity', r.mean_intensity],
+    ['Granule count', r.granule_count],
+    ['Granule mean area', r.granule_mean_area],
+    ['Granule mean intensity', r.granule_mean_intensity]
+  ];
+  document.getElementById('resBody').innerHTML =
+    rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('');
+
+  const vEl = document.getElementById('verdict');
+  vEl.textContent = r.verdict;
+  vEl.className = 'verdict ' + r._internal.vClass;
+
+  document.getElementById('resPanel').style.display = 'block';
+}
+
+// ─── CSV export ─────────────────────────────────────────────────────────────
+function exportCsv() {
+  if (!S.results) return;
+  const r = { ...S.results };
+  delete r._internal;
+  const keys = Object.keys(r);
+  const content = keys.join(',') + '\n' +
+                  keys.map(k => JSON.stringify(r[k])).join(',');
+  const base = S.fileName.replace(/\.[^.]+$/, '') || 'results';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' }));
+  a.download = base + '_results.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
