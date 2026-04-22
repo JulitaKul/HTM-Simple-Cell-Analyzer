@@ -37,7 +37,7 @@ Given a grayscale PNG or JPG image, the tool segments the main cell body, outlin
 
 Open the application directly in your browser:
 
-**→ [Launch HTM SCA](https://YOUR-USERNAME.github.io/htm-sca/)**
+**→ [Launch HTM SCA](https://julitakul.github.io/HTM-Simple-Cell-Analyzer/)**
 
 > Replace `YOUR-USERNAME` with your GitHub username once the repository is published with GitHub Pages enabled.
 
@@ -67,7 +67,7 @@ Just open the live link above and upload a PNG or JPG.
 ### Option 2 — download and run locally
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/htm-sca.git
+git clone https://julitakul.github.io/HTM-Simple-Cell-Analyzer/
 cd htm-sca
 # Open simple_cell_analyzer.html in your browser
 ```
