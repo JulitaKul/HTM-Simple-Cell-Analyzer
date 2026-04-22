@@ -168,7 +168,7 @@ A Zenodo DOI will be added when a stable release is tagged.
 
 For publications using HTM SCA output:
 
-> Cell morphology was analyzed using HTM SCA v1.0 (https://github.com/YOUR-USERNAME/htm-sca).
+> Cell morphology was analyzed using HTM SCA v1.0 (https://julitakul.github.io/HTM-Simple-Cell-Analyzer/).
 > Images were converted to grayscale, background-corrected using a rolling box-blur
 > subtraction (radius 8 px), and cell regions identified by percentile thresholding of
 > the residual image. The largest non-border-touching connected component was selected
