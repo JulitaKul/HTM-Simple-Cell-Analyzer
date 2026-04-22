@@ -213,6 +213,7 @@ For substantial feature additions (batch processing, time-series, advanced segme
 
 MIT License — free for academic and non-commercial research use.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 See [LICENSE](LICENSE) for full terms.
 
 ---
