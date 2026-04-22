@@ -223,4 +223,4 @@ See [LICENSE](LICENSE) for full terms.
 Prof. Julita Kulbacka
 Department of Molecular and Cellular Biology, Faculty of Pharmacy
 Wroclaw Medical University, Poland
-julita.kulbacka@umed.wroc.pl
+julita.kulbacka@umw.edu.pl
