@@ -158,8 +158,7 @@ The three sliders are the main user controls. For power users, these constants i
 If you use HTM SCA in your research, please cite:
 
 ```
-Kulbacka J. et al. (2026). HTM SCA: HTM Simple Cell Analyzer (v1.0).
-GitHub. https://github.com/YOUR-USERNAME/htm-sca
+Kulbacka J. et al. (2026). HTM SCA: HTM Simple Cell Analyzer (v1.0). GitHub. https://julitakul.github.io/HTM-Simple-Cell-Analyzer/
 ```
 
 A Zenodo DOI will be added when a stable release is tagged.
